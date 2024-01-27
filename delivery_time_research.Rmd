@@ -1,0 +1,407 @@
+---
+title: "Research project"
+author: "Anastasia Kucheruk, Olena Hnyp, Kateryna Shvahuliak"
+date: "2023-12-16"
+output: html_document
+---
+
+## Research project:
+
+### Analysis of delivery time and its dependence on various factors
+
+Data set: <https://www.kaggle.com/datasets/rajatkumar30/food-delivery-time/code>
+
+## Libraries which we use in research
+
+```{r}
+library(ggplot2)
+library(dplyr)
+```
+
+## Read data
+
+In our original data we had columns ID and coordinates (latitude, longitude of restaurants and delivery location). We deleted these columns, and instead of the coordinates, we inserted a column with the distance using python. Also, we add column Speed for future calculations.
+
+```{r}
+delivery <- read.csv("new_deliverytime.csv")
+
+#add column speed (speed (km/hours) = ditance (km)/ (time (min)/60))
+delivery$Speed <- delivery$Distance * 60 / delivery$Time_taken.min. 
+delivery
+```
+
+## Classification of data
+
+We decided to divide people into two groups: under 30 and over 30. We want to test whether age somehow influences delivery time. Also, we will be considering only delivery in the range of 30 km because mostly food is not delivered further than that.
+
+```{r}
+sorted_distance <- delivery[order(delivery$Distance), ]
+under_30 <- sorted_distance[sorted_distance$Delivery_person_Age < 30 & sorted_distance$Distance < 30, ]
+over_30 <- sorted_distance[sorted_distance$Delivery_person_Age >= 30 & sorted_distance$Distance < 30, ]
+```
+
+## How does vehicle type influence delivery speed?
+
+### Let\`s analyze how the vehicle delivery person is using influences delivery time.
+
+Split by type of vehicle:
+
+```{r}
+vehicle_type_under_30 <- split(under_30, under_30$Type_of_vehicle)
+motorcycle_under_30 <- vehicle_type_under_30$motorcycle
+bicycle_under_30 <- vehicle_type_under_30$bicycle
+scooter_under_30 <- vehicle_type_under_30$scooter
+electric_scooter_under_30 <- vehicle_type_under_30$electric_scooter
+```
+
+```{r}
+vehicle_type_over_30 <- split(over_30, over_30$Type_of_vehicle)
+motorcycle_over_30 <- vehicle_type_over_30$motorcycle
+bicycle_over_30 <- vehicle_type_over_30$bicycle
+scooter_over_30 <- vehicle_type_over_30$scooter
+electric_scooter_over_30 <- vehicle_type_over_30$electric_scooter
+```
+
+Compare means of speed of people under 30 and over 30 who deliver by motorcycle:
+
+```{r}
+mean_motorcycle_under_30 <- mean(motorcycle_under_30$Speed)
+cat("Mean delivery speed of people under 30 on motorcycle:", mean_motorcycle_under_30, "\n")
+
+mean_motorcycle_over_30 <- mean(motorcycle_over_30$Speed)
+cat("Mean delivery speed of people over 30 on motorcycle:", mean_motorcycle_over_30)
+```
+
+```{r}
+all_motorcycle_data <- bind_rows(
+  mutate(motorcycle_under_30, Group = "Under 30"),
+  mutate(motorcycle_over_30, Group = "Over 30")
+)
+
+all_motorcycle_data %>%
+  ggplot(aes(x = Speed, fill = Group)) +
+  geom_density(alpha = 0.5) +
+  labs(title = "Density plot of delivery speed on motorcycle", x = "Speed", y = "Density") +
+  theme_minimal() +
+  xlim(1, 80) +
+  scale_fill_manual(values = c("#69b3a2", "#FF9999"))
+```
+
+Compare means of speed of people under 30 and over 30 who deliver by bicycle:
+
+```{r}
+mean_bicycle_under_30 <- mean(bicycle_under_30$Speed)
+cat("Mean delivery speed of people under 30 on bicycle:", mean_bicycle_under_30, "\n")
+
+mean_bicycle_over_30 <- mean(bicycle_over_30$Speed)
+cat("Mean delivery speed of people over 30 on bicycle:", mean_bicycle_over_30)
+```
+
+```{r}
+all_bicycle_data <- bind_rows(
+  mutate(bicycle_under_30, Group = "Under 30"),
+  mutate(bicycle_over_30, Group = "Over 30")
+)
+
+all_bicycle_data %>%
+  ggplot(aes(x = Speed, fill = Group)) +
+  geom_density(alpha = 0.5) +
+  labs(title = "Density plot of delivery speed on bicycle", x = "Speed", y = "Density") +
+  theme_minimal() +
+  xlim(1, 80) +
+  scale_fill_manual(values = c("#69b3a2", "#FF9999"))
+```
+
+Compare means of speed of people under 30 and over 30 who deliver by scooter:
+
+```{r}
+mean_scooter_under_30 <- mean(scooter_under_30$Speed)
+cat("Mean delivery speed of people under 30 on scooter:", mean_scooter_under_30, "\n")
+
+mean_scooter_over_30 <- mean(scooter_over_30$Speed)
+cat("Mean delivery speed of people over 30 on scooter:", mean_scooter_over_30)
+```
+
+```{r}
+all_scooter_data <- bind_rows(
+  mutate(scooter_under_30, Group = "Under 30"),
+  mutate(scooter_over_30, Group = "Over 30")
+)
+
+all_scooter_data %>%
+  ggplot(aes(x = Speed, fill = Group)) +
+  geom_density(alpha = 0.5) +
+  labs(title = "Density plot of delivery speed on scooter", x = "Speed", y = "Density") +
+  theme_minimal() +
+  xlim(1, 80) +
+  scale_fill_manual(values = c("#69b3a2", "#FF9999"))
+```
+
+Compare means of speed of people under 30 and over 30 who deliver by electric scooter:
+
+```{r}
+mean_electric_scooter_under_30 <- mean(electric_scooter_under_30$Speed)
+cat("Mean delivery speed of people under 30 on electric scooter:", mean_electric_scooter_under_30, "\n")
+
+mean_electric_scooter_over_30 <- mean(electric_scooter_over_30$Speed)
+cat("Mean delivery speed of people over 30 on electric scooter:", mean_electric_scooter_over_30)
+```
+
+```{r}
+all_electric_scooter_data <- bind_rows(
+  mutate(electric_scooter_under_30, Group = "Under 30"),
+  mutate(electric_scooter_over_30, Group = "Over 30")
+)
+
+all_electric_scooter_data %>%
+  ggplot(aes(x = Speed, fill = Group)) +
+  geom_density(alpha = 0.5) +
+  labs(title = "Density plot of delivery speed on electric scooter", x = "Speed", y = "Density") +
+  theme_minimal() +
+  xlim(1, 80) +
+  scale_fill_manual(values = c("#69b3a2", "#FF9999"))
+```
+
+We can see that the worst type of vehicle to deliver food is a bicycle. When we ride it, the speed is the lowest among the other vehicle types. We can also check if people under 30 drive some vehicles quicker than people over 30.
+
+```{r}
+if (mean_motorcycle_under_30 > mean_motorcycle_over_30) {
+  cat("People under 30 deliver on motorcycle quicker than people over 30\n")
+} else {
+  cat("People over 30 deliver on motorcycle quicker than people under 30\n")
+}
+
+if (mean_bicycle_under_30 > mean_bicycle_over_30) {
+  cat("People under 30 deliver on bicycle quicker than people over 30\n")
+} else {
+  cat("People over 30 deliver on bicycle quicker than people under 30\n")
+}
+
+if (mean_scooter_under_30 > mean_scooter_over_30) {
+  cat("People under 30 deliver on scooter quicker than people over 30\n")
+} else {
+  cat("People over 30 deliver on scooter quicker than people under 30\n")
+}
+
+if (mean_electric_scooter_under_30 > mean_electric_scooter_over_30) {
+  cat("People under 30 deliver on electric scooter quicker than people over 30")
+} else {
+  cat("People over 30 deliver on electric scooter quicker than people under 30")
+}
+```
+
+So, we can conclude that no matter what vehicle type the delivery person is using, delivery is quicker if the person is under 30. But this testing is not enough to fire all delivery people over 30. Let\`s keep testing!
+
+## How does type of order influence delivery speed?
+
+Split by type of order:
+
+```{r}
+order_type_under_30 <- split(under_30, under_30$Type_of_order)
+meal_under_30 <- order_type_under_30$Meal
+snack_under_30 <- order_type_under_30$Snack
+buffet_under_30 <- order_type_under_30$Buffet
+drink_under_30 <- order_type_under_30$Drink
+```
+
+```{r}
+order_type_over_30 <- split(over_30, over_30$Type_of_order)
+meal_over_30 <- order_type_over_30$Meal
+snack_over_30 <- order_type_over_30$Snack
+buffet_over_30 <- order_type_over_30$Buffet
+drink_over_30 <- order_type_over_30$Drink
+```
+
+Compare means of speed of people under 30 and over 30 who deliver meal:
+
+```{r}
+mean_meal_under_30 <- mean(meal_under_30$Speed)
+cat("Mean meal delivery speed of people under 30:", mean_meal_under_30, "\n")
+
+mean_meal_over_30 <- mean(meal_over_30$Speed)
+cat("Mean meal delivery speed of people over 30:", mean_meal_over_30)
+```
+
+```{r}
+all_meal_data <- bind_rows(
+  mutate(meal_under_30, Group = "Under 30"),
+  mutate(meal_over_30, Group = "Over 30")
+)
+
+all_meal_data %>%
+  ggplot(aes(x = Speed, fill = Group)) +
+  geom_density(alpha = 0.5) +
+  labs(title = "Density plot of meal delivery speed", x = "Speed", y = "Density") +
+  theme_minimal() +
+  xlim(1, 80) +
+  scale_fill_manual(values = c("#69b3a2", "#FF9999"))
+```
+
+Compare means of speed of people under 30 and over 30 who deliver snacks:
+
+```{r}
+mean_snack_under_30 <- mean(snack_under_30$Speed)
+cat("Mean snack delivery speed of people under 30:", mean_snack_under_30, "\n")
+
+mean_snack_over_30 <- mean(snack_over_30$Speed)
+cat("Mean snack delivery speed of people over 30:", mean_snack_over_30)
+```
+
+```{r}
+all_snack_data <- bind_rows(
+  mutate(snack_under_30, Group = "Under 30"),
+  mutate(snack_over_30, Group = "Over 30")
+)
+
+all_snack_data %>%
+  ggplot(aes(x = Speed, fill = Group)) +
+  geom_density(alpha = 0.5) +
+  labs(title = "Density plot of snack delivery speed", x = "Speed", y = "Density") +
+  theme_minimal() +
+  xlim(1, 80) +
+  scale_fill_manual(values = c("#69b3a2", "#FF9999"))
+```
+
+Compare means of speed of people under 30 and over 30 who deliver buffet:
+
+```{r}
+mean_buffet_under_30 <- mean(buffet_under_30$Speed)
+cat("Mean buffet delivery speed of people under 30:", mean_buffet_under_30, "\n")
+
+mean_buffet_over_30 <- mean(buffet_over_30$Speed)
+cat("Mean buffet delivery speed of people over 30:", mean_buffet_over_30)
+```
+
+```{r}
+all_buffet_data <- bind_rows(
+  mutate(buffet_under_30, Group = "Under 30"),
+  mutate(buffet_over_30, Group = "Over 30")
+)
+
+all_buffet_data %>%
+  ggplot(aes(x = Speed, fill = Group)) +
+  geom_density(alpha = 0.5) +
+  labs(title = "Density plot of buffet delivery speed", x = "Speed", y = "Density") +
+  theme_minimal() +
+  xlim(1, 80) +
+  scale_fill_manual(values = c("#69b3a2", "#FF9999"))
+```
+
+Compare means of speed of people under 30 and over 30 who deliver drinks:
+
+```{r}
+mean_drink_under_30 <- mean(drink_under_30$Speed)
+cat("Mean drink delivery speed of people under 30:", mean_drink_under_30, "\n")
+
+mean_drink_over_30 <- mean(drink_over_30$Speed)
+cat("Mean drink delivery speed of people over 30:", mean_drink_over_30)
+```
+
+```{r}
+all_drink_data <- bind_rows(
+  mutate(drink_under_30, Group = "Under 30"),
+  mutate(drink_over_30, Group = "Over 30")
+)
+
+all_drink_data %>%
+  ggplot(aes(x = Speed, fill = Group)) +
+  geom_density(alpha = 0.5) +
+  labs(title = "Density plot of drink delivery speed", x = "Speed", y = "Density") +
+  theme_minimal() +
+  xlim(1, 80) +
+  scale_fill_manual(values = c("#69b3a2", "#FF9999"))
+```
+
+Let's consider who delivers food faster - people under 30 or over 30:
+
+```{r}
+if (mean_meal_under_30 > mean_meal_over_30) {
+  cat("People under 30 deliver meals quicker than people over 30\n")
+} else {
+  cat("People over 30 deliver meals quicker than people under 30\n")
+}
+
+if (mean_snack_under_30 > mean_snack_over_30) {
+  cat("People under 30 deliver snacks quicker than people over 30\n")
+} else {
+  cat("People over 30 deliver snacks quicker than people under 30\n")
+}
+
+if (mean_buffet_under_30 > mean_buffet_over_30) {
+  cat("People under 30 deliver buffet quicker than people over 30\n")
+} else {
+  cat("People over 30 deliver buffet quicker than people under 30\n")
+}
+
+if (mean_drink_under_30 > mean_drink_over_30) {
+  cat("People under 30 deliver drinks scooter quicker than people over 30")
+} else {
+  cat("People over 30 deliver drinks scooter quicker than people under 30")
+}
+```
+
+Again, we can see that people under 30 deliver different type of foods quicker than people over 30. But is the difference significant enough to fire delivery people over 30?
+
+## Hypotheses testing
+
+Let's test, whether speed of people under 30 and over 30 has normal distribution? For this, we use Kolmogorov-Smirnov test:
+
+```{r}
+speed_under_30 <- under_30$Speed
+speed_under_30_without_ties <- jitter(speed_under_30)
+ks.test(speed_under_30_without_ties, "pnorm")
+```
+
+```{r}
+speed_over_30 <- over_30$Speed
+speed_over_30_without_ties <- jitter(speed_over_30)
+ks.test(speed_over_30_without_ties, "pnorm")
+```
+
+As we can see, in both cases we reject null hypothesis that distributions of speed are normal, so the next test will approximate.
+
+$$\text{Our hypotheses are:} \\
+H_0: \mu_1 = \mu_2 \text{ vs } H_1: \mu_1 \neq \mu_2 \\
+\text{ where } \mu_1 \text{ is the mean delivery speed of people under 30 } \\
+\text { and } \mu_2 \text{ is the mean delivery speed of people over 30 }$$
+
+Let\`s use t-test to test the means because the variance is unknown:
+
+```{r}
+speed_under_30 <- under_30$Speed
+speed_over_30 <- over_30$Speed
+t_test_age <- t.test(speed_under_30, speed_over_30)
+t_test_age
+```
+
+Our p-value is smaller than 0.05 so we can reject the null hypothesis. Now we definitely can conclude that delivery people under 30 deliver food quicker than people over 30. And it doesn\`t matter what vehicle they are using or what food they are delivering.
+
+Test
+
+```{r}
+distance_less30 <- delivery[delivery$Distance < 30, ]
+food_30 <- split(distance_less30, distance_less30$Type_of_order)
+drinks <- food_30$`Drinks `
+meal <- food_30$`Meal `
+buffet <- food_30$`Buffet `
+snacks <- food_30$`Snack `
+```
+
+```{r}
+mean(drinks$Speed)
+mean(meal$Speed)
+mean(snacks$Speed)
+mean(buffet$Speed)
+
+dr <- t.test(meal$Speed, drinks$Speed, "l")
+sn <- t.test(meal$Speed, snacks$Speed, "l")
+bf <- t.test(meal$Speed, buffet$Speed, "l")
+bf
+```
+
+```{r}
+t1 <- t.test(snacks$Speed, drinks$Speed, "g")
+t2 <- t.test(snacks$Speed, meal$Speed, "g")
+t3 <- t.test(snacks$Speed, buffet$Speed, "g")
+t3
+```
